@@ -1,0 +1,52 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
+  background: #06060f;
+  color: #f1f0ff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Убираем белый фон у scrollbar в Chrome */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #06060f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a4a;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6c3fc5;
+}
+
+/* Убираем outline у кнопок */
+button:focus-visible {
+  outline: 2px solid #c084fc;
+  outline-offset: 2px;
+}
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Убираем синюю рамку у input/select */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+}
+
+/* Плавные переходы */
+a {
+  color: inherit;
+  text-decoration: none;
+}
