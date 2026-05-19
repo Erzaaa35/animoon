@@ -125,3 +125,9 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', ''),
 }
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://animoon-production.up.railway.app',
+    'https://*.railway.app',
+    'https://*.vercel.app',
+] 
