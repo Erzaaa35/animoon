@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py collectstatic --noinput && python -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@mail.com', 'admin123456')" && python seed.py && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
+web: python manage.py migrate && python manage.py collectstatic --noinput && python create_admin.py && python seed.py && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
