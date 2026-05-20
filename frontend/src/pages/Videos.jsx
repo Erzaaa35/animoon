@@ -14,12 +14,37 @@ const FONT_DISPLAY = "'Georgia', serif";
 const FONT_BODY = "'Segoe UI', sans-serif";
 const FONT_MONO = "monospace";
 
+const API_URL = process.env.REACT_APP_API_URL
+  ? process.env.REACT_APP_API_URL.replace('/api', '')
+  : 'http://localhost:8000';
+
+function mediaUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${API_URL}${path}`;
+}
+
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
   if (diff < 60) return 'только что';
-  if (diff < 3600) return `${Math.floor(diff/60)} мин назад`;
-  if (diff < 86400) return `${Math.floor(diff/3600)} ч назад`;
-  return `${Math.floor(diff/86400)} дн назад`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} мин назад`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ч назад`;
+  return `${Math.floor(diff / 86400)} дн назад`;
+}
+
+function MiniAvatar({ name, size = 26 }) {
+  const initials = (name || '?').slice(0, 2).toUpperCase();
+  const hue = (name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      background: `hsl(${hue},50%,25%)`,
+      border: `2px solid hsl(${hue},50%,40%)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.38, fontWeight: 700, color: C.white,
+      fontFamily: FONT_DISPLAY, cursor: 'pointer',
+    }}>{initials}</div>
+  );
 }
 
 function CommentBlock({ videoId, user }) {
@@ -35,7 +60,7 @@ function CommentBlock({ videoId, user }) {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, [videoId]);
+  useEffect(() => { load(); }, [videoId]); // eslint-disable-line
 
   const submit = async (e) => {
     e.preventDefault();
@@ -65,16 +90,11 @@ function CommentBlock({ videoId, user }) {
         color: C.accent, letterSpacing: '0.1em', marginBottom: 14 }}>
         💬 КОММЕНТАРИИ ({comments.length})
       </div>
-
-      {/* Input */}
       <form onSubmit={submit} style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <textarea
-            value={text}
-            onChange={e => setText(e.target.value)}
+          <textarea value={text} onChange={e => setText(e.target.value)}
             placeholder={user ? 'Написать комментарий...' : 'Войдите чтобы комментировать'}
-            disabled={!user}
-            rows={2}
+            disabled={!user} rows={2}
             style={{ flex: 1, background: user ? C.bg2 : C.faint,
               border: `1px solid ${C.border}`, borderRadius: 8,
               color: user ? C.white : C.muted, padding: '8px 12px',
@@ -85,9 +105,7 @@ function CommentBlock({ videoId, user }) {
             <button type="submit"
               style={{ background: C.accentDeep, border: 'none',
                 borderRadius: 8, padding: '0 16px', color: C.white,
-                fontSize: 18, cursor: 'pointer', flexShrink: 0 }}>
-              →
-            </button>
+                fontSize: 18, cursor: 'pointer', flexShrink: 0 }}>→</button>
           )}
         </div>
         {!user && (
@@ -100,43 +118,32 @@ function CommentBlock({ videoId, user }) {
           </button>
         )}
       </form>
-
-      {/* List */}
       {loading ? (
-        <div style={{ color: C.muted, fontSize: 13,
-          textAlign: 'center', padding: '16px 0' }}>Загрузка...</div>
+        <div style={{ color: C.muted, fontSize: 13, textAlign: 'center', padding: '16px 0' }}>
+          Загрузка...
+        </div>
       ) : comments.length === 0 ? (
-        <div style={{ color: C.muted, fontSize: 13,
-          textAlign: 'center', padding: '16px 0',
-          border: `1px dashed ${C.border}`, borderRadius: 8 }}>
-          Комментариев пока нет. Будь первым! 👇
+        <div style={{ color: C.muted, fontSize: 13, textAlign: 'center',
+          padding: '16px 0', border: `1px dashed ${C.border}`, borderRadius: 8 }}>
+          Комментариев пока нет 👇
         </div>
       ) : (
         <div>
           {comments.map(c => (
             <div key={c.id} style={{ display: 'flex', gap: 10,
               padding: '10px 0', borderBottom: `1px solid ${C.faint}` }}>
-              <div style={{ width: 30, height: 30, borderRadius: '50%',
-                background: C.accentDeep + '44',
-                border: `2px solid ${C.accentDeep}`,
-                display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: 12,
-                fontWeight: 700, color: C.white, flexShrink: 0 }}>
-                {(c.display_name || c.username || '?').slice(0,2).toUpperCase()}
+              <div onClick={() => nav(`/user/${c.username}`)} style={{ cursor: 'pointer' }}>
+                <MiniAvatar name={c.display_name || c.username} size={30}/>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline',
-                  gap: 8, marginBottom: 3 }}>
-                  <span style={{ fontWeight: 700, fontSize: 12,
-                    color: C.accent }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 3 }}>
+                  <span onClick={() => nav(`/user/${c.username}`)}
+                    style={{ fontWeight: 700, fontSize: 12, color: C.accent, cursor: 'pointer' }}>
                     {c.display_name || c.username}
                   </span>
-                  <span style={{ fontSize: 11, color: C.muted }}>
-                    {timeAgo(c.created_at)}
-                  </span>
+                  <span style={{ fontSize: 11, color: C.muted }}>{timeAgo(c.created_at)}</span>
                 </div>
-                <p style={{ margin: '0 0 5px', fontSize: 13,
-                  color: C.white, lineHeight: 1.5 }}>
+                <p style={{ margin: '0 0 5px', fontSize: 13, color: C.white, lineHeight: 1.5 }}>
                   {c.text}
                 </p>
                 <div style={{ display: 'flex', gap: 12 }}>
@@ -169,6 +176,8 @@ function CommentBlock({ videoId, user }) {
 
 function VideoCard({ video, user, onLike, onPlay }) {
   const [hov, setHov] = useState(false);
+  const nav = useNavigate();
+
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{ background: hov ? C.surface : C.bg2,
@@ -181,7 +190,7 @@ function VideoCard({ video, user, onLike, onPlay }) {
         style={{ position: 'relative', paddingTop: '56.25%',
           background: C.faint, overflow: 'hidden' }}>
         {video.thumbnail ? (
-          <img src={video.thumbnail} alt={video.title}
+          <img src={mediaUrl(video.thumbnail)} alt={video.title}
             style={{ position: 'absolute', inset: 0,
               width: '100%', height: '100%', objectFit: 'cover' }}/>
         ) : (
@@ -214,7 +223,12 @@ function VideoCard({ video, user, onLike, onPlay }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 12, color: C.muted }}>
+          {/* Кликабельное имя автора */}
+          <span onClick={(e) => { e.stopPropagation(); nav(`/user/${video.uploader_name}`); }}
+            style={{ fontSize: 12, color: C.accent, cursor: 'pointer',
+              textDecoration: 'none' }}
+            onMouseEnter={e => e.target.style.textDecoration = 'underline'}
+            onMouseLeave={e => e.target.style.textDecoration = 'none'}>
             {video.uploader_display || video.uploader_name}
           </span>
           {video.anime_title && (
@@ -228,9 +242,7 @@ function VideoCard({ video, user, onLike, onPlay }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center',
           justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 12, color: C.muted }}>
-            💬 {video.comments_count}
-          </span>
+          <span style={{ fontSize: 12, color: C.muted }}>💬 {video.comments_count}</span>
           <button onClick={(e) => { e.stopPropagation(); onLike(video); }}
             style={{ background: 'none', border: 'none',
               cursor: user ? 'pointer' : 'default',
@@ -258,26 +270,26 @@ function VideoModal({ video, onClose, user, onLike }) {
     onLike(video.id, res.data.liked, res.data.likes);
   };
 
+  const videoSrc = video.video_file
+    ? (video.video_file.startsWith('http') ? video.video_file : mediaUrl(video.video_file))
+    : null;
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100,
       background: 'rgba(6,6,15,0.96)',
       display: 'flex', alignItems: 'center',
       justifyContent: 'center', padding: 16 }}
       onClick={onClose}>
-      <div style={{ background: C.surface,
-        border: `1px solid ${C.borderGlow}`,
+      <div style={{ background: C.surface, border: `1px solid ${C.borderGlow}`,
         borderRadius: 16, maxWidth: 740, width: '100%',
         maxHeight: '94vh', overflowY: 'auto',
         boxShadow: `0 0 60px ${C.accentGlow}`,
-        scrollbarWidth: 'thin',
-        scrollbarColor: `${C.border} transparent` }}
+        scrollbarWidth: 'thin', scrollbarColor: `${C.border} transparent` }}
         onClick={e => e.stopPropagation()}>
 
-        {/* Player */}
-        <div style={{ background: '#000', borderRadius: '16px 16px 0 0',
-          overflow: 'hidden' }}>
-          {video.video_file ? (
-            <video src={video.video_file} controls autoPlay
+        <div style={{ background: '#000', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}>
+          {videoSrc ? (
+            <video src={videoSrc} controls autoPlay
               style={{ width: '100%', maxHeight: 380, display: 'block' }}/>
           ) : (
             <div style={{ aspectRatio: '16/9', display: 'flex',
@@ -288,7 +300,6 @@ function VideoModal({ video, onClose, user, onLike }) {
         </div>
 
         <div style={{ padding: '18px 24px 24px' }}>
-          {/* Title row */}
           <div style={{ display: 'flex', alignItems: 'flex-start',
             justifyContent: 'space-between', gap: 16, marginBottom: 10 }}>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 20,
@@ -301,37 +312,38 @@ function VideoModal({ video, onClose, user, onLike }) {
                 padding: 0, lineHeight: 1, flexShrink: 0 }}>✕</button>
           </div>
 
-          {/* Meta */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 12,
-            fontSize: 12, color: C.muted, flexWrap: 'wrap' }}>
-            <span>👤 {video.uploader_display || video.uploader_name}</span>
+            fontSize: 12, color: C.muted, flexWrap: 'wrap',
+            alignItems: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MiniAvatar name={video.uploader_display || video.uploader_name} size={22}/>
+              <span onClick={() => nav(`/user/${video.uploader_name}`)}
+                style={{ color: C.accent, cursor: 'pointer' }}>
+                {video.uploader_display || video.uploader_name}
+              </span>
+            </span>
             <span>👁 {video.views}</span>
             {video.anime_title && <span>🎌 {video.anime_title}</span>}
           </div>
 
-          {/* Description */}
           {video.description && (
             <p style={{ fontFamily: FONT_BODY, fontSize: 13,
               color: C.muted, lineHeight: 1.6, margin: '0 0 14px',
-              background: C.bg2, borderRadius: 8,
-              padding: '10px 14px' }}>
+              background: C.bg2, borderRadius: 8, padding: '10px 14px' }}>
               {video.description}
             </p>
           )}
 
-          {/* Like button */}
           <button onClick={handleLike}
-            style={{ width: '100%',
-              background: liked ? '#f472b622' : C.bg2,
+            style={{ width: '100%', background: liked ? '#f472b622' : C.bg2,
               border: `1px solid ${liked ? C.pink : C.border}`,
               color: liked ? C.pink : C.muted, borderRadius: 8,
               padding: '10px 0', fontFamily: FONT_BODY,
-              fontSize: 14, cursor: 'pointer',
-              transition: 'all 0.2s', marginBottom: 4 }}>
+              fontSize: 14, cursor: 'pointer', transition: 'all 0.2s',
+              marginBottom: 4 }}>
             {liked ? '♥' : '♡'} {likes} {likes === 1 ? 'лайк' : 'лайков'}
           </button>
 
-          {/* Comments */}
           <CommentBlock videoId={video.id} user={user}/>
         </div>
       </div>
@@ -368,12 +380,14 @@ export default function Videos({ user, onLogout }) {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg,
-      fontFamily: FONT_BODY, color: C.white }}>
+      fontFamily: FONT_BODY, color: C.white,
+      display: 'flex', flexDirection: 'column' }}>
 
+      {/* ── HEADER ── */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30,
-        background: C.bg+'f0', backdropFilter: 'blur(12px)',
+        background: C.bg + 'f2', backdropFilter: 'blur(16px)',
         borderBottom: `1px solid ${C.border}`,
-        padding: '0 24px', height: 60,
+        padding: '0 24px', height: 58,
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center',
@@ -433,94 +447,97 @@ export default function Videos({ user, onLogout }) {
         </div>
       </header>
 
-      <div style={{ padding: '32px 24px 20px' }}>
-        <div style={{ fontFamily: FONT_MONO, fontSize: 11, color: C.accent,
-          letterSpacing: '0.2em', marginBottom: 8 }}>
-          ✦ ПОЛЬЗОВАТЕЛЬСКИЕ ВИДЕО ✦
+      {/* ── MAIN ── */}
+      <div style={{ flex: 1 }}>
+        <div style={{ padding: '32px 24px 20px' }}>
+          <div style={{ fontFamily: FONT_MONO, fontSize: 11, color: C.accent,
+            letterSpacing: '0.2em', marginBottom: 8 }}>
+            ✦ ПОЛЬЗОВАТЕЛЬСКИЕ ВИДЕО ✦
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+            <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 32,
+              color: C.white, margin: 0 }}>
+              Видео от <span style={{ color: C.accent }}>сообщества</span>
+            </h1>
+            {user && (
+              <button onClick={() => nav('/upload')}
+                style={{ background: C.accentDeep, border: 'none',
+                  borderRadius: 10, padding: '10px 20px', color: C.white,
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                📤 Загрузить видео
+              </button>
+            )}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 32,
-            color: C.white, margin: 0 }}>
-            Видео от <span style={{ color: C.accent }}>сообщества</span>
-          </h1>
-          {user && (
-            <button onClick={() => nav('/upload')}
-              style={{ background: C.accentDeep, border: 'none',
-                borderRadius: 10, padding: '10px 20px', color: C.white,
-                fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-              📤 Загрузить видео
-            </button>
+
+        <div style={{ padding: '0 24px 20px' }}>
+          <div style={{ position: 'relative', maxWidth: 400 }}>
+            <input value={query} onChange={e => setQuery(e.target.value)}
+              placeholder="Поиск видео..."
+              style={{ width: '100%', background: C.surface,
+                border: `1px solid ${C.border}`, borderRadius: 8,
+                color: C.white, padding: '9px 14px 9px 38px',
+                fontSize: 13, fontFamily: FONT_BODY, outline: 'none',
+                boxSizing: 'border-box' }}/>
+            <span style={{ position: 'absolute', left: 12,
+              top: '50%', transform: 'translateY(-50%)',
+              color: C.muted, pointerEvents: 'none' }}>🔍</span>
+          </div>
+        </div>
+
+        <main style={{ padding: '0 24px 60px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '80px 0', color: C.muted }}>
+              <div style={{ fontSize: 36, marginBottom: 14 }}>🌙</div>
+              <div>Загрузка...</div>
+            </div>
+          ) : videos.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>📹</div>
+              <div style={{ fontSize: 18, color: C.white, marginBottom: 8 }}>
+                Видео пока нет
+              </div>
+              <div style={{ color: C.muted, marginBottom: 24, fontSize: 14 }}>
+                Стань первым кто загрузит видео!
+              </div>
+              <button onClick={() => nav(user ? '/upload' : '/login')}
+                style={{ background: C.accentDeep, border: 'none',
+                  borderRadius: 10, padding: '12px 28px', color: C.white,
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                {user ? '📤 Загрузить первое видео' : 'Войти и загрузить'}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div style={{ fontFamily: FONT_MONO, fontSize: 11,
+                color: C.muted, letterSpacing: '0.12em', marginBottom: 16 }}>
+                НАЙДЕНО {videos.length} ВИДЕО
+              </div>
+              <div style={{ display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(260px,1fr))',
+                gap: 16 }}>
+                {videos.map(v => (
+                  <VideoCard key={v.id} video={v} user={user}
+                    onLike={async (video) => {
+                      if (!user) { nav('/login'); return; }
+                      const res = await videoAPI.like(video.id);
+                      handleLike(video.id, res.data.liked, res.data.likes);
+                    }}
+                    onPlay={setPlaying}/>
+                ))}
+              </div>
+            </>
           )}
-        </div>
+        </main>
       </div>
 
-      <div style={{ padding: '0 24px 20px' }}>
-        <div style={{ position: 'relative', maxWidth: 400 }}>
-          <input value={query} onChange={e => setQuery(e.target.value)}
-            placeholder="Поиск видео..."
-            style={{ width: '100%', background: C.surface,
-              border: `1px solid ${C.border}`, borderRadius: 8,
-              color: C.white, padding: '9px 14px 9px 38px',
-              fontSize: 13, fontFamily: FONT_BODY, outline: 'none',
-              boxSizing: 'border-box' }}/>
-          <span style={{ position: 'absolute', left: 12,
-            top: '50%', transform: 'translateY(-50%)',
-            color: C.muted, pointerEvents: 'none' }}>🔍</span>
-        </div>
-      </div>
-
-      <main style={{ padding: '0 24px 60px' }}>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: C.muted }}>
-            <div style={{ fontSize: 36, marginBottom: 14 }}>🌙</div>
-            <div>Загрузка...</div>
-          </div>
-        ) : videos.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>📹</div>
-            <div style={{ fontSize: 18, color: C.white, marginBottom: 8 }}>
-              Видео пока нет
-            </div>
-            <div style={{ color: C.muted, marginBottom: 24, fontSize: 14 }}>
-              Стань первым кто загрузит видео!
-            </div>
-            <button onClick={() => nav(user ? '/upload' : '/login')}
-              style={{ background: C.accentDeep, border: 'none',
-                borderRadius: 10, padding: '12px 28px', color: C.white,
-                fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-              {user ? '📤 Загрузить первое видео' : 'Войти и загрузить'}
-            </button>
-          </div>
-        ) : (
-          <>
-            <div style={{ fontFamily: FONT_MONO, fontSize: 11,
-              color: C.muted, letterSpacing: '0.12em', marginBottom: 16 }}>
-              НАЙДЕНО {videos.length} ВИДЕО
-            </div>
-            <div style={{ display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px,1fr))',
-              gap: 16 }}>
-              {videos.map(v => (
-                <VideoCard key={v.id} video={v} user={user}
-                  onLike={async (video) => {
-                    if (!user) { nav('/login'); return; }
-                    const res = await videoAPI.like(video.id);
-                    handleLike(video.id, res.data.liked, res.data.likes);
-                  }}
-                  onPlay={setPlaying}/>
-              ))}
-            </div>
-          </>
-        )}
-      </main>
-
+      {/* ── FOOTER — такой же как на главной ── */}
       <footer style={{ borderTop: `1px solid ${C.border}`,
-        padding: '20px 28px', display: 'flex', justifyContent: 'space-between' }}>
-        <div style={{ fontFamily: FONT_DISPLAY, fontSize: 16,
-          color: C.accent }}>🌙 AniMoon</div>
-        <div style={{ fontFamily: FONT_MONO, fontSize: 11,
-          color: C.muted }}>учебный проект · 2025</div>
+        padding: '16px 28px', display: 'flex',
+        justifyContent: 'center', alignItems: 'center' }}>
+        <span style={{ fontFamily: FONT_DISPLAY, fontSize: 16,
+          color: C.accent }}>🌙 AniMoon</span>
       </footer>
 
       {playing && (

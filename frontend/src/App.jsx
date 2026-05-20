@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Upload from './pages/Upload';
 import Profile from './pages/Profile';
 import Videos from './pages/Videos';
+import PublicProfile from './pages/PublicProfile';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -52,6 +53,7 @@ export default function App() {
       <Route path="/profile"  element={<Profile user={user}/>}/>
       <Route path="/videos"   element={<Videos user={user} onLogout={logout}/>}/>
       <Route path="*"         element={<Navigate to="/" replace/>}/>
+      <Route path="/user/:username" element={<PublicProfile user={user}/>}/>
     </Routes>
   );
 }
