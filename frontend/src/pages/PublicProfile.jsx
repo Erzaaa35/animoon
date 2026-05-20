@@ -7,7 +7,7 @@ const C = {
   border: '#2a2a4a', borderGlow: '#6c3fc5',
   accent: '#c084fc', accentDeep: '#7c3aed',
   accentGlow: 'rgba(192,132,252,0.18)',
-  pink: '#f472b6', teal: '#2dd4bf',
+  gold: '#fbbf24', pink: '#f472b6', teal: '#2dd4bf',
   white: '#f1f0ff', muted: '#7b7a9e', faint: '#2e2e50',
 };
 const FONT_DISPLAY = "'Georgia', serif";
@@ -24,14 +24,16 @@ function mediaUrl(path) {
   return `${API_URL}${path}`;
 }
 
-function Avatar({ profile, size = 80 }) {
-  const initials = (profile?.display_name || profile?.username || '?').slice(0, 2).toUpperCase();
+function Avatar({ profile, size = 90 }) {
+  const initials = (profile?.display_name || profile?.username || '?')
+    .slice(0, 2).toUpperCase();
   const color = profile?.banner_color || C.accentDeep;
   if (profile?.avatar) {
     return (
       <img src={mediaUrl(profile.avatar)} alt="avatar"
         style={{ width: size, height: size, borderRadius: '50%',
-          objectFit: 'cover', border: `3px solid ${color}` }}/>
+          objectFit: 'cover', border: `3px solid ${color}`,
+          position: 'relative', zIndex: 2 }}/>
     );
   }
   return (
@@ -39,7 +41,7 @@ function Avatar({ profile, size = 80 }) {
       background: color + '55', border: `3px solid ${color}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: size * 0.35, fontWeight: 700, color: C.white,
-      fontFamily: FONT_DISPLAY }}>
+      fontFamily: FONT_DISPLAY, position: 'relative', zIndex: 2 }}>
       {initials}
     </div>
   );
@@ -56,10 +58,12 @@ export default function PublicProfile({ user }) {
 
   useEffect(() => {
     setLoading(true);
+    setNotFound(false);
     profileAPI.getPublic(username)
       .then(res => {
         setProfile(res.data);
-        return videoAPI.getAll({ user: res.data.id });
+        const userId = res.data.user_id || res.data.id;
+        return videoAPI.getAll({ user: userId });
       })
       .then(res => setVideos(res.data))
       .catch(() => setNotFound(true))
@@ -70,7 +74,10 @@ export default function PublicProfile({ user }) {
     <div style={{ minHeight: '100vh', background: C.bg,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       color: C.muted, fontFamily: FONT_BODY }}>
-      Загрузка...
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>🌙</div>
+        <div>Загрузка...</div>
+      </div>
     </div>
   );
 
@@ -90,6 +97,7 @@ export default function PublicProfile({ user }) {
   );
 
   const isOwn = user?.username === username;
+  const bannerColor = profile.banner_color || C.accentDeep;
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg,
@@ -99,7 +107,7 @@ export default function PublicProfile({ user }) {
       {/* Header */}
       <header style={{ height: 58, borderBottom: `1px solid ${C.border}`,
         display: 'flex', alignItems: 'center', padding: '0 28px',
-        justifyContent: 'space-between', background: C.bg,
+        justifyContent: 'space-between', background: C.bg + 'f2',
         position: 'sticky', top: 0, zIndex: 30,
         backdropFilter: 'blur(12px)' }}>
         <div style={{ display: 'flex', alignItems: 'center',
@@ -128,7 +136,7 @@ export default function PublicProfile({ user }) {
               style={{ background: C.accentDeep, border: 'none',
                 borderRadius: 8, padding: '6px 14px', color: C.white,
                 fontSize: 13, cursor: 'pointer' }}>
-              ✏️ Мой профиль
+              ✏️ Редактировать
             </button>
           ) : (
             <button onClick={() => nav(-1)}
@@ -141,53 +149,83 @@ export default function PublicProfile({ user }) {
         </div>
       </header>
 
-      {/* Banner */}
-      <div style={{ height: 140, position: 'relative',
-        background: `linear-gradient(135deg, ${profile.banner_color || C.accentDeep}88, #06060f)` }}/>
+      {/* Banner — высокий чтобы аватарка была внутри */}
+      <div style={{ height: 180, position: 'relative',
+        background: `linear-gradient(135deg, ${bannerColor}cc 0%, ${bannerColor}44 50%, #06060f 100%)`,
+        flexShrink: 0 }}>
+        {/* Декоративные элементы */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.15 }}>
+          <div style={{ position: 'absolute', right: '10%', top: '20%',
+            width: 120, height: 120, borderRadius: '50%',
+            background: bannerColor, filter: 'blur(40px)' }}/>
+          <div style={{ position: 'absolute', left: '30%', bottom: '10%',
+            width: 80, height: 80, borderRadius: '50%',
+            background: C.accent, filter: 'blur(30px)' }}/>
+        </div>
+      </div>
 
-      {/* Profile info */}
-      <div style={{ maxWidth: 820, margin: '0 auto', padding: '0 24px', flex: 1, width: '100%' }}>
+      {/* Profile content */}
+      <div style={{ maxWidth: 820, margin: '0 auto',
+        padding: '0 24px', flex: 1, width: '100%', boxSizing: 'border-box' }}>
+
+        {/* Avatar + name row */}
         <div style={{ display: 'flex', alignItems: 'flex-end',
-          gap: 20, marginTop: -40, marginBottom: 20 }}>
-          <Avatar profile={profile} size={84}/>
-          <div style={{ flex: 1, paddingBottom: 6 }}>
+          gap: 20, marginTop: -48, marginBottom: 20 }}>
+          <Avatar profile={profile} size={90}/>
+          <div style={{ flex: 1, paddingBottom: 8 }}>
             <h1 style={{ margin: '0 0 4px', fontSize: 22,
-              fontWeight: 700, fontFamily: FONT_DISPLAY }}>
+              fontWeight: 700, fontFamily: FONT_DISPLAY,
+              textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
               {profile.display_name || profile.username}
             </h1>
-            <div style={{ color: C.muted, fontSize: 13 }}>@{profile.username}</div>
+            <div style={{ color: C.muted, fontSize: 13 }}>
+              @{profile.username}
+            </div>
           </div>
         </div>
 
+        {/* Bio */}
         {profile.bio && (
           <p style={{ color: C.white, fontSize: 14, lineHeight: 1.6,
-            margin: '0 0 20px' }}>
+            margin: '0 0 20px', padding: '12px 16px',
+            background: C.surface, borderRadius: 8,
+            border: `1px solid ${C.border}` }}>
             {profile.bio}
           </p>
         )}
 
+        {/* Stats */}
         <div style={{ display: 'flex', gap: 28, marginBottom: 28 }}>
           {[
             { label: 'Видео', value: profile.videos_count },
             { label: 'Лайки', value: profile.likes_count },
           ].map(({ label, value }) => (
             <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: C.accent }}>{value}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: C.accent }}>
+                {value}
+              </div>
               <div style={{ fontSize: 12, color: C.muted }}>{label}</div>
             </div>
           ))}
         </div>
 
-        {/* Videos */}
+        {/* Videos grid */}
         <div style={{ marginBottom: 40 }}>
           <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 18,
-            color: C.accent, margin: '0 0 16px' }}>
-            Видео пользователя
+            color: C.accent, margin: '0 0 16px',
+            display: 'flex', alignItems: 'center', gap: 10 }}>
+            Видео
+            <span style={{ fontFamily: FONT_MONO, fontSize: 13,
+              color: C.muted, fontWeight: 400 }}>
+              {videos.length}
+            </span>
           </h2>
+
           {videos.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 0',
-              color: C.muted, border: `1px dashed ${C.border}`, borderRadius: 10 }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>📹</div>
+            <div style={{ textAlign: 'center', padding: '40px 0',
+              color: C.muted, border: `1px dashed ${C.border}`,
+              borderRadius: 10 }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }}>📹</div>
               Пользователь ещё не загружал видео
             </div>
           ) : (
@@ -196,28 +234,49 @@ export default function PublicProfile({ user }) {
               gap: 14 }}>
               {videos.map(v => (
                 <div key={v.id} onClick={() => setPlayingVideo(v)}
-                  style={{ background: C.surface, border: `1px solid ${C.border}`,
-                    borderRadius: 10, overflow: 'hidden', cursor: 'pointer' }}>
+                  style={{ background: C.surface,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 10, overflow: 'hidden',
+                    cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.border = `1px solid ${C.borderGlow}`;
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.border = `1px solid ${C.border}`;
+                    e.currentTarget.style.transform = 'none';
+                  }}>
                   <div style={{ aspectRatio: '16/9', background: C.bg2,
                     position: 'relative', overflow: 'hidden' }}>
                     {v.thumbnail ? (
                       <img src={mediaUrl(v.thumbnail)} alt={v.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                        style={{ width: '100%', height: '100%',
+                          objectFit: 'cover', display: 'block' }}/>
                     ) : (
                       <div style={{ width: '100%', height: '100%',
                         display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', fontSize: 28 }}>🎬</div>
+                        justifyContent: 'center', fontSize: 28,
+                        background: 'linear-gradient(135deg,#7c3aed22,#06060f)' }}>
+                        🎬
+                      </div>
                     )}
+                    <div style={{ position: 'absolute', bottom: 6, right: 8,
+                      background: '#00000099', borderRadius: 4,
+                      padding: '2px 6px', fontFamily: FONT_MONO,
+                      fontSize: 10, color: C.muted }}>
+                      👁 {v.views}
+                    </div>
                   </div>
                   <div style={{ padding: '10px 12px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: C.white,
-                      marginBottom: 4, whiteSpace: 'nowrap',
-                      overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700,
+                      color: C.white, marginBottom: 4,
+                      whiteSpace: 'nowrap', overflow: 'hidden',
+                      textOverflow: 'ellipsis' }}>
                       {v.title}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between',
+                    <div style={{ display: 'flex',
+                      justifyContent: 'space-between',
                       fontSize: 11, color: C.muted }}>
-                      <span>👁 {v.views}</span>
                       <span>❤️ {v.likes_count}</span>
                       <span>💬 {v.comments_count}</span>
                     </div>
@@ -244,34 +303,52 @@ export default function PublicProfile({ user }) {
           display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: 16 }}
           onClick={() => setPlayingVideo(null)}>
-          <div style={{ background: C.surface, border: `1px solid ${C.borderGlow}`,
+          <div style={{ background: C.surface,
+            border: `1px solid ${C.borderGlow}`,
             borderRadius: 16, maxWidth: 700, width: '100%',
-            maxHeight: '90vh', overflowY: 'auto' }}
+            maxHeight: '90vh', overflowY: 'auto',
+            boxShadow: `0 0 60px ${C.accentGlow}` }}
             onClick={e => e.stopPropagation()}>
-            <div style={{ background: '#000', borderRadius: '16px 16px 0 0',
-              overflow: 'hidden' }}>
+            <div style={{ background: '#000',
+              borderRadius: '16px 16px 0 0', overflow: 'hidden' }}>
               {playingVideo.video_file ? (
                 <video src={mediaUrl(playingVideo.video_file)}
                   controls autoPlay
-                  style={{ width: '100%', maxHeight: 360, display: 'block' }}/>
+                  style={{ width: '100%', maxHeight: 380, display: 'block' }}/>
               ) : (
                 <div style={{ aspectRatio: '16/9', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center', fontSize: 48,
-                  background: 'linear-gradient(135deg,#7c3aed22,#06060f)' }}>🎬</div>
+                  alignItems: 'center', justifyContent: 'center',
+                  fontSize: 48,
+                  background: 'linear-gradient(135deg,#7c3aed22,#06060f)' }}>
+                  🎬
+                </div>
               )}
             </div>
             <div style={{ padding: '16px 20px 20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between',
-                marginBottom: 8 }}>
+              <div style={{ display: 'flex',
+                justifyContent: 'space-between', marginBottom: 8 }}>
                 <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: 17,
-                  color: C.white, margin: 0 }}>{playingVideo.title}</h3>
+                  color: C.white, margin: 0, flex: 1 }}>
+                  {playingVideo.title}
+                </h3>
                 <button onClick={() => setPlayingVideo(null)}
-                  style={{ background: 'none', border: 'none', color: C.muted,
-                    fontSize: 20, cursor: 'pointer', padding: 0 }}>✕</button>
+                  style={{ background: 'none', border: 'none',
+                    color: C.muted, fontSize: 20,
+                    cursor: 'pointer', padding: 0, marginLeft: 12 }}>✕</button>
               </div>
-              <div style={{ fontSize: 12, color: C.muted }}>
-                👁 {playingVideo.views} · ❤️ {playingVideo.likes_count}
+              <div style={{ fontSize: 12, color: C.muted, marginBottom: 10 }}>
+                👁 {playingVideo.views} просмотров ·
+                ❤️ {playingVideo.likes_count} лайков ·
+                💬 {playingVideo.comments_count} комментариев
               </div>
+              {playingVideo.description && (
+                <p style={{ fontFamily: FONT_BODY, fontSize: 13,
+                  color: C.muted, lineHeight: 1.6, margin: 0,
+                  background: C.bg2, borderRadius: 8,
+                  padding: '10px 14px' }}>
+                  {playingVideo.description}
+                </p>
+              )}
             </div>
           </div>
         </div>
