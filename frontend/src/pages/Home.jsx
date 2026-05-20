@@ -491,7 +491,7 @@ function Modal({ anime, onClose, inFav, onFav, user }) {
                 )}
               </div>
             </div>
-
+й
             {/* ── YouTube iframe ── */}
             <div style={{ borderRadius: 10, overflow: 'hidden',
               background: '#000', position: 'relative', paddingTop: '56.25%' }}>
