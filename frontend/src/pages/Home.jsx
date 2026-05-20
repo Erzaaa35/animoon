@@ -469,29 +469,29 @@ function Modal({ anime, onClose, inFav, onFav, user }) {
                       transition: 'all 0.15s' }}>
                     {n}
                   </button>
-                ))}
-                {!showAllEps && anime.episodes > 26 && (
-                  <button onClick={() => setShowAllEps(true)}
-                    style={{ height: 34, borderRadius: 6,
-                      border: `1px solid ${C.border}`,
-                      background: 'none', color: C.accent,
-                      fontFamily: FONT_MONO, fontSize: 11,
-                      cursor: 'pointer', padding: '0 12px',
-                      transition: 'all 0.15s' }}>
-                    +{anime.episodes - 26} ещё ▼
-                  </button>
-                )}
-                {showAllEps && anime.episodes > 26 && (
-                  <button onClick={() => setShowAllEps(false)}
-                    style={{ height: 34, borderRadius: 6,
-                      border: `1px solid ${C.border}`,
-                      background: 'none', color: C.muted,
-                      fontFamily: FONT_MONO, fontSize: 11,
-                      cursor: 'pointer', padding: '0 12px' }}>
-                    Свернуть ▲
-                  </button>
-                )}
-              </div>
+                  ))}
+                  {!showAllEps && anime.episodes > 26 && (
+                    <button onClick={() => setShowAllEps(true)}
+                      style={{ height: 34, borderRadius: 6,
+                        border: `1px solid ${C.border}`,
+                        background: 'none', color: C.accent,
+                        fontFamily: FONT_MONO, fontSize: 11,
+                        cursor: 'pointer', padding: '0 12px',
+                        transition: 'all 0.15s' }}>
+                      +{anime.episodes - 26} ещё ▼
+                    </button>
+                  )}
+                  {showAllEps && anime.episodes > 26 && (
+                    <button onClick={() => setShowAllEps(false)}
+                      style={{ height: 34, borderRadius: 6,
+                        border: `1px solid ${C.border}`,
+                        background: 'none', color: C.muted,
+                        fontFamily: FONT_MONO, fontSize: 11,
+                        cursor: 'pointer', padding: '0 12px' }}>
+                      Свернуть ▲
+                    </button>
+                  )}
+                </div>
 
             {/* ── YouTube iframe ── */}
             <div style={{ borderRadius: 10, overflow: 'hidden',
