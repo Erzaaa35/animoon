@@ -29,14 +29,14 @@ function mediaUrl(path) {
 
 // Рабочие YouTube embed ID для каждого аниме
 const ANIME_VIDEOS = {
-  'Атака Титанов':               'EohPsrO6qZ0', // AoT финальный сезон трейлер RU
-  'Клинок, рассекающий демонов': 'VQGCKyvzIM4', // Demon Slayer official trailer
-  'Стальной Алхимик':            'kx0nBaS_q50', // FMA Brotherhood trailer
-  'Violet Evergarden':           'tNpWUtEdHJw', // Violet Evergarden Movie Netflix
-  'Хоримия':                     'e4RCugyx5No', // Horimiya official trailer
-  'Тетрадь смерти':              'NlJZ-YgAt-c', // Death Note Crunchyroll trailer
-  'Оверлорд':                    'ffTKNwHF70c', // Overlord season 1 trailer
-  'Евангелион':                  '13nSISwxrY4', // NGE Netflix official trailer
+  'Атака Титанов':               'EohPsrO6qZ0',
+  'Клинок, рассекающий демонов': 'VQGCKyvzIM4',
+  'Стальной Алхимик':            'kx0nBaS_q50',
+  'Violet Evergarden':           'tNpWUtEdHJw',
+  'Хоримия':                     'e4RCugyx5No',
+  'Тетрадь смерти':              'NlJZ-YgAt-c',
+  'Оверлорд':                    'ffTKNwHF70c',
+  'Евангелион':                  '13nSISwxrY4',
 };
 
 function Badge({ children, color }) {
@@ -194,7 +194,7 @@ function CommentsPanel({ animeId, user }) {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, [animeId]); // eslint-disable-line
+  useEffect(() => { load(); }, [animeId]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -450,7 +450,6 @@ function Modal({ anime, onClose, inFav, onFav, user }) {
         {/* ── PLAYER TAB ── */}
         {tab === 'player' && (
           <div style={{ padding: '18px 24px 22px' }}>
-
             {/* Episode selector */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontFamily: FONT_MONO, fontSize: 10,
@@ -491,13 +490,14 @@ function Modal({ anime, onClose, inFav, onFav, user }) {
                   </button>
                 )}
               </div>
+            </div>
 
             {/* ── YouTube iframe ── */}
             <div style={{ borderRadius: 10, overflow: 'hidden',
               background: '#000', position: 'relative', paddingTop: '56.25%' }}>
               {embedUrl ? (
                 <iframe
-                  key={ep} // перезагружаем при смене эпизода
+                  key={ep}
                   src={embedUrl}
                   title={`${anime.title} — эп. ${ep}`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -505,7 +505,6 @@ function Modal({ anime, onClose, inFav, onFav, user }) {
                   style={{ position: 'absolute', inset: 0,
                     width: '100%', height: '100%', border: 'none' }}/>
               ) : (
-                /* Аниме без прописанного видео — кнопки поиска */
                 <div style={{ position: 'absolute', inset: 0,
                   display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
@@ -831,7 +830,7 @@ export default function Home({ user, onLogout }) {
         )}
       </main>
 
-      {/* ── FOOTER — только логотип ── */}
+      {/* ── FOOTER ── */}
       <footer style={{ borderTop: `1px solid ${C.border}`,
         padding: '16px 28px', display: 'flex',
         justifyContent: 'center', alignItems: 'center' }}>
