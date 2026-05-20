@@ -12,13 +12,14 @@ class GenreSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.CharField(source='user.email', read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
     videos_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
         fields = [
-            'id', 'username', 'email', 'display_name',
+            'id', 'user_id', 'username', 'email', 'display_name',
             'bio', 'avatar', 'banner_color',
             'favorite_genre', 'created_at',
             'videos_count', 'likes_count',

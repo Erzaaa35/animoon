@@ -359,6 +359,8 @@ function AnimeCard({ anime, onSelect, inFav, onFav }) {
 
 function Modal({ anime, onClose, inFav, onFav, user }) {
   const [tab, setTab] = useState('player');
+  const [showAllEps, setShowAllEps] = useState(false);
+  const visibleEps = showAllEps ? anime.episodes : Math.min(anime.episodes, 26);
   const [ep, setEp] = useState(1);
   const statusLabel = anime.status === 'ongoing' ? 'Выходит'
     : anime.status === 'finished' ? 'Завершён' : 'Анонс';
@@ -456,7 +458,7 @@ function Modal({ anime, onClose, inFav, onFav, user }) {
                 ЭПИЗОД
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {Array.from({ length: Math.min(anime.episodes, 26) },
+                {Array.from({ length: visibleEps }, (_, i) => i + 1).map(n => (
                   (_, i) => i + 1).map(n => (
                   <button key={n} onClick={() => setEp(n)}
                     style={{ width: 34, height: 34, borderRadius: 6,
@@ -468,14 +470,28 @@ function Modal({ anime, onClose, inFav, onFav, user }) {
                     {n}
                   </button>
                 ))}
-                {anime.episodes > 26 && (
-                  <span style={{ color: C.muted, fontSize: 12,
-                    alignSelf: 'center', marginLeft: 4 }}>
-                    +{anime.episodes - 26} ещё
-                  </span>
+                {!showAllEps && anime.episodes > 26 && (
+                  <button onClick={() => setShowAllEps(true)}
+                    style={{ height: 34, borderRadius: 6,
+                      border: `1px solid ${C.border}`,
+                      background: 'none', color: C.accent,
+                      fontFamily: FONT_MONO, fontSize: 11,
+                      cursor: 'pointer', padding: '0 12px',
+                      transition: 'all 0.15s' }}>
+                    +{anime.episodes - 26} ещё ▼
+                  </button>
+                )}
+                {showAllEps && anime.episodes > 26 && (
+                  <button onClick={() => setShowAllEps(false)}
+                    style={{ height: 34, borderRadius: 6,
+                      border: `1px solid ${C.border}`,
+                      background: 'none', color: C.muted,
+                      fontFamily: FONT_MONO, fontSize: 11,
+                      cursor: 'pointer', padding: '0 12px' }}>
+                    Свернуть ▲
+                  </button>
                 )}
               </div>
-            </div>
 
             {/* ── YouTube iframe ── */}
             <div style={{ borderRadius: 10, overflow: 'hidden',
